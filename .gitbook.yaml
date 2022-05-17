@@ -2,7 +2,4 @@ root: ./docs
 
 structure:
   readme: ./README.md
-  summary: ./docs/SUMMARY.md
-
-redirects:
-  previous/page: ./docs.HELP.md
+  summary: ./SUMMARY.md
