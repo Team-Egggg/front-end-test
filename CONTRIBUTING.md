@@ -1,13 +1,21 @@
 # Contributing
 
-When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change.
+When contributing to this repository, please follow Pull Request Process rule.
 
 ## Pull Request Process
 
-1. Ensure any install or build dependencies are removed before the end of the layer when doing a
-   build.
-2. Update the README.md with details of changes to the interface, this includes new environment
-   variables, exposed ports, useful file locations and container parameters.
-3. You may merge the Pull Request in once you have the sign-off of two other developers, or if you
-   do not have permission to do that, you may request the second reviewer to merge it for you.
+1. first fork this repository.
+2. second make branch from main branch
+```javascript
+git checkout -b [branch-name]
+```
+3. update or add docs and example code.
+4. if you add docs please update `docs/SUMMARY.md`
+5. after finishing update code 
+```javascript
+git add [...change]
+git commit -m "[explain changes]"
+git push origin main
+```
+6. finally pull request.
+7. we merge your pull request afther code review.
