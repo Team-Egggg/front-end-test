@@ -1,3 +1,4 @@
+출처 : [jest 공식문서/mock](https://jestjs.io/docs/mock-functions)
 # 테스트 더블
 테스트더블은 실제 환경에서 테스트하기 어려울때 실제 대상을 대신해서 테스트 할수 있도록 도와주는 객체입니다.
 
@@ -97,4 +98,126 @@ test(('auth값이 true일때만 add가 가능하다'), async () => {
 
 
 위의 코드처럼 미리 준비된 값을 이용해서 테스트 더블을 구현하는 방식을 stub이라고 합니다. 
+### Mock
+onClick함수에서 확인해야 될것은 onClick함수가 인자로 넣은 callback함수를 auth에 따라 분기처리가 되어서 실행이 되는지만 확인하면 간단해집니다.
+그래서 jest에서는 Mock 함수를 지원하고 있습니다. Mock함수는 미리 준비된 데이터를 이용하는것이 아니라 호출이 되는지 되면 몇번 호출되는지 호출되었을때
+인자는 어떤 건지등 목표로 하는 함수가 제대로 실행되어지는 확인하는 행동검증입니다.
 
+그럼 Mock 함수를 이용해서 onClick함수의 테스트 코드를 작성해보겠습니다.
+```javascript
+class TodoListMock {
+  add = jest.fn();
+
+  remove = jest.fn();
+
+  update = jest.fn();
+
+  getList = jest.fn();
+}
+
+test.only('auth값이 true일때만 add함수가 호출된다.', () => {
+  const todoListMock = new TodoListMock();
+  onClick(false, {}, todoListMock);
+  expect(todoListMock.add.mock.calls.length).toBe(0);
+  onClick(true, {}, todoListMock);
+  expect(todoListMock.add.mock.calls.length).toBe(1);
+  onClick(true, {}, todoListMock);
+  expect(todoListMock.add.mock.calls.length).toBe(2);
+});
+```
+jest.fn()을 통해서 함수를 반환받으면 해당 함수는 자신이 호출될때마다 인자와 반환값을 저장하고 있습니다.
+그렇기 때문에 호출된 인자를 저장한 길이를 몇번 호출되었는지를 알 수 있습니다.
+# Jest Mock
+이제 본격적으로 jest를 사용해서 실제 로직을 대신할 테스트 더블을 어떻게 만드는지 알아보겠습니다. 
+>실제로 mock과 stub의 구분이 명확하지 않기 때문에 위에는 그냥 이런게 있구나 라는 생각으로 가볍게 읽고
+> 지금부터는 mock과 stub의 구별 없이 그냥 mock이라고 하겠습니다.
+
+## jest.fn()
+jest.fn 함수를 이용해서 Mock을 만들 수 있고 만드는 방법은 다음과 같습니다.
+```javascript
+const mockFn = jest.fn((x) => x + 1);
+```
+jest.fn의 인자로 콜백함수를 인자로 넣으면 해당 콜백함수에 mock이라는 프로퍼티를 붙여서 mock 함수를 반환해줍니다.
+이렇게 만들어진 함수는 mock이라는 프로퍼티를 통해서 다양한 것들을 테스트를 할 수 있습니다.
+```javascript
+test.only('mockFn함수의 테스트 코드', () => {
+  mockFn(1);
+  mockFn(2, 2, 3);
+  mockFn(3);
+  console.log(mockFn.mock.calls); 
+  console.log(mockFn.mock.results);
+});
+```
+mock은 calls와 results 두가지 프로퍼티를 가지고 있고 해당 프로퍼티는 함수가 실행될때마다 들어온 인자와 
+반환된 값을 저장합니다.
+출력값을 보면 다음과 같습니다.
+```javascript
+  mockFn.mock.calls
+    [ [ 1 ], [ 2, 2, 3 ], [ 3 ] ]
+
+  mockFn.mock.results
+    [
+      { type: 'return', value: 2 },
+      { type: 'return', value: 3 },
+      { type: 'return', value: 4 }
+    ]
+```
+이것을 이용해서 테스트하면 다음과 같이 테스트 할 수 있습니다.
+```javascript
+test.only('mockFn함수의 테스트 코드', () => {
+  mockFn(1);
+  mockFn(2, 2, 3);
+  mockFn(3);
+  expect(mockFn.mock.calls.length).toBe(3);
+  expect(mockFn.mock.calls[1][0]).toBe(2);
+  expect(mockFn.mock.results[0].value).toBe(2);
+});
+```
+총 3번 호출이 되었고 2번째로 호출되었을때 첫번째 인자는 2이고 첫번째로 호출되었을때 반환한 값은 아까 jest.fn함수에
+넣었던 함수가 그대로 실행되면서 2가 나옵니다.
+이것외에도 mock.instance, mock.context, mock.lastCall등 다양한 것들이 있으니
+더 알고 싶으신 분들은 jest 공식문서에서 확인하면 됩니다.
+
+## API Mcok 만들기
+jest에서는 두가지 방법으로 mock을 만들 수 있습니다. 첫번째는 위에서 만들어보았던 실제 함수대신에
+mock함수를 callback 형식으로 넘겨주는 방식이 있습니다.
+이런 방식은 모든 코드가 callback함수를 넘겨받는 코드가 되어야 테스트가 가능하다는 단점이있습니다.
+
+또다른 방법은 아래와같이 이미 있는 모듈을 mock으로 변경시키는 방법이 있습니다.
+```javascript
+const axios = require('axios');
+
+jest.mock('axios');
+
+async function login(token) {
+    const result = await axios.get(token);
+    return result.data;
+}
+
+const state = {
+    user: null,
+};
+
+async function onLogin(token) {
+    const userData = await login(token);
+    if (userData) {
+        state.user = userData;
+    }
+}
+
+test.only('api를 통해서 유저의 데이터를 받아오는데 성공하면 state에 유저 데이터를 저장한다.', async () => {
+    const mockResult = { data: { name: 'mario' } };
+    axios.get.mockResolvedValue(mockResult);
+    await onLogin('qwd8u2138u');
+    await onLogin('qwd8u2138u');
+    expect(state.user.name).toBe('mario');
+});
+```
+axios라는 라이브러리를 이용해서 만든 login함수는 토큰을 서버로 보내서 유저정보를 받아오는
+함수입니다. 그리고 onLogin함수는 login함수로 받은 유저정보를 state에 저장하는 역할을 합니다.
+이때 onLogin함수에 대한 테스트를 하고 싶을때 실제로 서버에 요청을 보내거나 callback함수로
+넣어주는 방법이 아닌 axios 모듈자체를 변경시켜서 테스트하는 코드입니다.
+
+jest.mock에 원하는 모듈의 path를 넣어줍니다. axios는 package.json으로 관리되기 때문에
+경로없이 해당 패키지 이름만 넣어주어도 됩니다. 그리고 axios.get.mockResolvedValue를 이용해서
+미리 준비한 가짜 데이터를 넣어두면 axios.get을 실행했을때 넣어두었던 가짜 데이터를 반환합니다.
