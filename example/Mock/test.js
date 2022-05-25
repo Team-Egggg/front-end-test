@@ -111,9 +111,10 @@ async function onLogin(token) {
   }
 }
 jest.mock('axios');
-test('api를 통해서 유저의 데이터를 받아오는데 성공하면 state에 유저 데이터를 저장한다.', async () => {
-  const mockResult = { data: { name: 'mario' } };
-  axios.get.mockResolvedValue(mockResult);
-  await onLogin('qwd8u2138u');
+
+test.only('api를 통해서 유저의 데이터를 받아오는데 성공하면 state에 유저 데이터를 저장한다.', async () => {
+  await onLogin('mario');
   expect(state.user.name).toBe('mario');
+  await onLogin('tom');
+  expect(state.user.name).toBe('tom');
 });

@@ -178,7 +178,7 @@ test.only('mockFn함수의 테스트 코드', () => {
 이것외에도 mock.instance, mock.context, mock.lastCall등 다양한 것들이 있으니
 더 알고 싶으신 분들은 jest 공식문서에서 확인하면 됩니다.
 
-## API Mcok 만들기
+## API Mock 만들기
 jest에서는 두가지 방법으로 mock을 만들 수 있습니다. 첫번째는 위에서 만들어보았던 실제 함수대신에
 mock함수를 callback 형식으로 넘겨주는 방식이 있습니다.
 이런 방식은 모든 코드가 callback함수를 넘겨받는 코드가 되어야 테스트가 가능하다는 단점이있습니다.
@@ -221,3 +221,53 @@ axios라는 라이브러리를 이용해서 만든 login함수는 토큰을 서�
 jest.mock에 원하는 모듈의 path를 넣어줍니다. axios는 package.json으로 관리되기 때문에
 경로없이 해당 패키지 이름만 넣어주어도 됩니다. 그리고 axios.get.mockResolvedValue를 이용해서
 미리 준비한 가짜 데이터를 넣어두면 axios.get을 실행했을때 넣어두었던 가짜 데이터를 반환합니다.
+
+### API MOCK 만들기 심화
+테스트 하고자 하는 함수내부에 api를 여러번 호출하는데 각각 그 결과값이 달라야 할때는 어떻게 해야 할까요?
+이런 상황에서는 단순히 결과값을 미리 입력하는 방법으로는 테스트를 진행하기가 힘듭니다.
+
+그래서 직접 더 자세하게 결과값을 핸들링 할 수 있는 API MOCK을 만들어 주겠습니다.
+```javascript
+const axios = require('axios');
+
+async function login(token) {
+  const result = await axios.get(token);
+  return result.data;
+}
+
+const state = {
+  user: null,
+};
+
+async function onLogin(token) {
+  const userData = await login(token);
+  if (userData) {
+    state.user = userData;
+  }
+}
+jest.mock('axios');
+
+test.only('api를 통해서 유저의 데이터를 받아오는데 성공하면 state에 유저 데이터를 저장한다.', async () => {
+  await onLogin('mario');
+  expect(state.user.name).toBe('mario');
+  await onLogin('tom');
+  expect(state.user.name).toBe('tom');
+});
+
+```
+기존에 작성했던 테스트 코드를 위와 같이 변경을 하겠습니다. onLogin함수에서 받은 url 인자를 그대로 반환하는 가짜 axios를
+만들어야합니다.
+
+jest에서는 `__mocks__`라는 폴더 내부에 있는 파일들을 mock 모듈로 인식을 합니다. 그렇기 때문에 jest.mock을 진짜 axios는 잠시 넣어두고 대신 동작할 axios를 `__mocks__`폴더 내부에서 찾을 겁니다.
+
+그러면 해당 폴더 안에 `axios.js` 파일을 만들어주고 다음과 같이 코드를 작성하겠습니다.
+```javascript
+function axioMock(url) {
+    return { data: { name: url } }
+}
+
+module.exports = { get :axioMock };
+```
+그리고 실행을 해보면 테스트가 성공적으로 되는 것을 볼 수 있습니다. 미리 mock데이터를 준비해서 들어온 인자에 따라 맵핑된
+mock데이터를 반환하거나 실제 서버의 로직을 간단하게 구현하여 서버와 강하기 결합되어있는 코드를 좀 더 독립적인 환경에서
+테스트를 진행 할 수 있습니다.
