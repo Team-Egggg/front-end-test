@@ -146,3 +146,5 @@ test.only("api를 통해서 유저의 데이터를 받아오는데 성공하면 
   await onLogin("tom");
   expect(state.user.name).toBe("tom");
 });
+
+console.log("test");

@@ -1,5 +1,6 @@
 function App() {
-  return <h1>test</h1>;
-}
+  console.log('app render');
 
+  return <div>test</div>;
+}
 export default App;
