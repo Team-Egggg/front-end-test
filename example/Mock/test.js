@@ -17,19 +17,23 @@ class TodoList {
   }
 
   async getList() {
-    const result = await fetch('/getList');
+    const result = await fetch("/getList");
     return result;
   }
 }
 
-const sleep = (time) => new Promise((resolve) => {
-  setTimeout(resolve, time);
-});
+const sleep = (time) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
 
 class TodoListStub {
   async add(text) {
     await sleep(1000);
-    return { id: 0, text };
+    return {
+      id: 0,
+      text,
+    };
   }
 
   async remove(id) {
@@ -44,24 +48,50 @@ class TodoListStub {
 
   async getList() {
     await sleep(1000);
-    return [{ id: 0, text: 'test1' }, { id: 1, text: 'test2' }];
+    return [
+      {
+        id: 0,
+        text: "test1",
+      },
+      {
+        id: 1,
+        text: "test2",
+      },
+    ];
   }
 }
 
 async function onClick(auth, event, handleApi) {
-  if (!auth) return 'auth null';
+  if (!auth) return "auth null";
   const result = await handleApi.add(event.text);
   return result;
 }
-
-test('auth값이 true일때만 add가 가능하다', async () => {
+test("auth값이 true일때만 add가 가능하다", async () => {
   const todoListStub = new TodoListStub();
-  const result1 = await onClick(true, { text: 'test' }, todoListStub);
-  const result2 = await onClick(false, { text: 'test' }, todoListStub);
-  expect(result1).toEqual({ id: 0, text: 'test' });
-  expect(result2).not.toEqual({ id: 0, text: 'test' });
+  const result1 = await onClick(
+    true,
+    {
+      text: "test",
+    },
+    todoListStub
+  );
+  const result2 = await onClick(
+    false,
+    {
+      text: "test",
+    },
+    todoListStub
+  );
+  expect(result1).toEqual({
+    id: 0,
+    text: "test",
+  });
+  expect(result2).not.toEqual({
+    id: 0,
+    text: "test",
+  });
 });
-
+console.log("test");
 class TodoListMock {
   add = jest.fn();
 
@@ -72,7 +102,7 @@ class TodoListMock {
   getList = jest.fn();
 }
 
-test('auth값이 true일때만 add함수가 호출된다.', () => {
+test("auth값이 true일때만 add함수가 호출된다.", () => {
   const todoListMock = new TodoListMock();
   onClick(false, {}, todoListMock);
   expect(todoListMock.add.mock.calls.length).toBe(0);
@@ -84,7 +114,7 @@ test('auth값이 true일때만 add함수가 호출된다.', () => {
 
 const mockFn = jest.fn((x) => x + 1);
 
-test('mockFn함수의 테스트 코드', () => {
+test("mockFn함수의 테스트 코드", () => {
   mockFn(1);
   mockFn(2, 2, 3);
   mockFn(3);
@@ -92,9 +122,7 @@ test('mockFn함수의 테스트 코드', () => {
   expect(mockFn.mock.calls[1][0]).toBe(2);
   expect(mockFn.mock.results[0].value).toBe(2);
 });
-
-const axios = require('axios');
-
+const axios = require("axios");
 async function login(token) {
   const result = await axios.get(token);
   return result.data;
@@ -110,11 +138,11 @@ async function onLogin(token) {
     state.user = userData;
   }
 }
-jest.mock('axios');
+jest.mock("axios");
 
-test.only('api를 통해서 유저의 데이터를 받아오는데 성공하면 state에 유저 데이터를 저장한다.', async () => {
-  await onLogin('mario');
-  expect(state.user.name).toBe('mario');
-  await onLogin('tom');
-  expect(state.user.name).toBe('tom');
+test.only("api를 통해서 유저의 데이터를 받아오는데 성공하면 state에 유저 데이터를 저장한다.", async () => {
+  await onLogin("mario");
+  expect(state.user.name).toBe("mario");
+  await onLogin("tom");
+  expect(state.user.name).toBe("tom");
 });

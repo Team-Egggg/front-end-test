@@ -1,5 +1,5 @@
 function axioMock(url) {
-    return { data: { name: url } }
+  return { data: { name: url } };
 }
 
-module.exports = { get :axioMock };
+module.exports = { get: axioMock };
