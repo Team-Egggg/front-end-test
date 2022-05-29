@@ -2,9 +2,12 @@
   "env": {
     "browser": true,
     "es2021": true,
-    "jest": true
+    "jest": true,
+    "node": true
   },
   "extends": [
+    "react-app",
+    "react-app/jest",
     "airbnb",
     "airbnb-typescript",
     "plugin:import/typescript",
@@ -26,7 +29,6 @@
       2,
       { "extensions": [".js", ".jsx", ".ts", ".tsx"] }
     ],
-    "no-console": "warn",
-    "semi": "error"
+    "no-console": "warn"
   }
 }
