@@ -1,4 +1,4 @@
-function Button({ name }) {
+function Button({ name }: { name: string }) {
   return (
     <button data-testid="button" type="button">
       {name}
